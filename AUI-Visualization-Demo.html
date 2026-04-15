@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUI 学术论文有用性多维测度框架</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://unpkg.com/echarts@5.4.3/dist/echarts.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0a0f1a;
+      --bg-secondary: #111827;
+      --bg-card: #1a2332;
+      --bg-card-hover: #232d3f;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-gold: #d4a853;
+      --accent-gold-light: #f0d78c;
+      --accent-blue: #4a9eff;
+      --accent-teal: #2dd4bf;
+      --accent-rose: #f472b6;
+      --accent-purple: #a78bfa;
+      --border-color: rgba(212, 168, 83, 0.2);
+      --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
+      --font-display: 'Noto Serif SC', serif;
+      --font-body: 'Noto Sans SC', sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(ellipse at 20% 20%, rgba(74, 158, 255, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(212, 168, 83, 0.06) 0%, transparent 50%),
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 100px,
+          rgba(212, 168, 83, 0.02) 100px,
+          rgba(212, 168, 83, 0.02) 101px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent 100px,
+          rgba(212, 168, 83, 0.02) 100px,
+          rgba(212, 168, 83, 0.02) 101px
+        );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #app {
+      position: relative;
+      z-index: 1;
+    }
+
+    .header {
+      background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
+      padding: 1.5rem 3rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-light) 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: var(--bg-primary);
+      box-shadow: 0 4px 16px rgba(212, 168, 83, 0.3);
+    }
+
+    .logo-text {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-gold) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .logo-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 0.25rem;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 0.5rem;
+      background: var(--bg-card);
+      padding: 0.375rem;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .nav-tab {
+      padding: 0.625rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+    }
+
+    .nav-tab:hover {
+      color: var(--text-primary);
+      background: var(--bg-card-hover);
+    }
+
+    .nav-tab.active {
+      background: linear-gradient(135deg, var(--accent-gold) 0%, #c9973d 100%);
+      color: var(--bg-primary);
+      font-weight: 600;
+      box-shadow: 0 2px 12px rgba(212, 168, 83, 0.3);
+    }
+
+    .main-content {
+      padding: 2rem 3rem;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+    }
+
+    .section-subtitle {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-gold), var(--accent-blue));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-card);
+      border-color: var(--accent-gold);
+    }
+
+    .stat-card:hover::before {
+      opacity: 1;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+      line-height: 1.2;
+    }
+
+    .stat-value .unit {
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--text-secondary);
+    }
+
+    .stat-change {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+    }
+
+    .stat-change.positive {
+      background: rgba(45, 212, 191, 0.15);
+      color: var(--accent-teal);
+    }
+
+    .stat-change.negative {
+      background: rgba(244, 114, 182, 0.15);
+      color: var(--accent-rose);
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .chart-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    .chart-card.full-width {
+      grid-column: span 2;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .chart-title {
+      font-family: var(--font-display);
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+
+    .chart-badge {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .badge.nobel {
+      background: rgba(212, 168, 83, 0.2);
+      color: var(--accent-gold);
+    }
+
+    .badge.control {
+      background: rgba(74, 158, 255, 0.2);
+      color: var(--accent-blue);
+    }
+
+    .chart-container {
+      width: 100%;
+      height: 350px;
+    }
+
+    .comparison-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .paper-list {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+
+    .paper-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-bottom: 0.75rem;
+      background: var(--bg-secondary);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .paper-item:hover {
+      background: var(--bg-card-hover);
+      transform: translateX(4px);
+    }
+
+    .paper-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .paper-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .paper-icon.nobel {
+      background: linear-gradient(135deg, var(--accent-gold) 0%, #c9973d 100%);
+      color: var(--bg-primary);
+    }
+
+    .paper-icon.control {
+      background: linear-gradient(135deg, var(--accent-blue) 0%, #3b82f6 100%);
+      color: white;
+    }
+
+    .paper-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .paper-title {
+      font-weight: 500;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .paper-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .paper-score {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--accent-gold);
+    }
+
+    .score-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--bg-primary);
+      border-radius: 3px;
+      margin-top: 0.5rem;
+      overflow: hidden;
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 1s ease;
+    }
+
+    .score-bar-fill.nobel {
+      background: linear-gradient(90deg, var(--accent-gold), var(--accent-gold-light));
+    }
+
+    .score-bar-fill.control {
+      background: linear-gradient(90deg, var(--accent-blue), #60a5fa);
+    }
+
+    .dimension-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .dimension-card {
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .dimension-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .dimension-name {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+    }
+
+    .dimension-score {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .dimension-score.form { color: var(--accent-teal); }
+    .dimension-score.structure { color: var(--accent-purple); }
+    .dimension-score.semantics { color: var(--accent-rose); }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .network-container {
+      height: 600px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .semantic-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .citation-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+
+    .citation-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .citation-type {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.375rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .citation-type.substantive {
+      background: rgba(45, 212, 191, 0.2);
+      color: var(--accent-teal);
+    }
+
+    .citation-type.peripheral {
+      background: rgba(167, 139, 250, 0.2);
+      color: var(--accent-purple);
+    }
+
+    .citation-type.mention {
+      background: rgba(100, 116, 139, 0.2);
+      color: var(--text-muted);
+    }
+
+    .citation-text {
+      font-size: 0.875rem;
+      line-height: 1.8;
+      color: var(--text-secondary);
+    }
+
+    .citation-text .highlight {
+      background: linear-gradient(120deg, rgba(212, 168, 83, 0.3) 0%, rgba(212, 168, 83, 0.5) 100%);
+      color: var(--accent-gold-light);
+      padding: 0.125rem 0.25rem;
+      border-radius: 4px;
+    }
+
+    .knowledge-score {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .score-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .score-bar-horizontal {
+      flex: 1;
+      height: 8px;
+      background: var(--bg-primary);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .score-bar-horizontal .fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.8s ease;
+    }
+
+    .score-bar-horizontal .fill.high {
+      background: linear-gradient(90deg, var(--accent-teal), #5eead4);
+    }
+
+    .score-bar-horizontal .fill.medium {
+      background: linear-gradient(90deg, var(--accent-purple), #c4b5fd);
+    }
+
+    .score-bar-horizontal .fill.low {
+      background: linear-gradient(90deg, var(--text-muted), #94a3b8);
+    }
+
+    .score-value {
+      font-family: var(--font-display);
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      min-width: 3rem;
+      text-align: right;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      border-top: 1px solid var(--border-color);
+      margin-top: 2rem;
+    }
+
+    @media (max-width: 1200px) {
+      .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+      .chart-card.full-width {
+        grid-column: span 1;
+      }
+      .comparison-section {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+      .main-content {
+        padding: 1rem;
+      }
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      .nav-tabs {
+        flex-wrap: wrap;
+      }
+      .dimension-grid {
+        grid-template-columns: 1fr;
+      }
+      .semantic-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon">A</div>
+        <div>
+          <div class="logo-text">学术论文有用性多维测度框架</div>
+          <div class="logo-subtitle">Academic Usefulness Index (AUI)</div>
+        </div>
+      </div>
+      <nav class="nav-tabs">
+        <button 
+          v-for="tab in tabs" 
+          :key="tab.id"
+          class="nav-tab"
+          :class="{ active: activeTab === tab.id }"
+          @click="activeTab = tab.id"
+        >
+          {{ tab.name }}
+        </button>
+      </nav>
+    </header>
+
+    <main class="main-content">
+      <!-- Dashboard Tab -->
+      <div class="tab-content" :class="{ active: activeTab === 'dashboard' }">
+        <div class="section-title">AUI 综合测度看板</div>
+        <div class="section-subtitle">诺贝尔奖获奖论文 vs 对照组论文 · 多维指标对比</div>
+
+        <!-- Stats Overview -->
+        <div class="dashboard-grid">
+          <div class="stat-card">
+            <div class="stat-label">诺奖论文 AUI 均值</div>
+            <div class="stat-value">88.4<span class="unit">分</span></div>
+            <div class="stat-change positive">↑ 显著高于对照组</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">对照组 AUI 均值</div>
+            <div class="stat-value">37.6<span class="unit">分</span></div>
+            <div class="stat-change negative">↓ 低于基准线</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">优势倍数</div>
+            <div class="stat-value">2.35<span class="unit">×</span></div>
+            <div class="stat-change positive">诺奖论文优势明显</div>
+          </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title">多维指标雷达图</div>
+              <div class="chart-badge">
+                <span class="badge nobel">诺奖论文</span>
+                <span class="badge control">对照组</span>
+              </div>
+            </div>
+            <div class="chart-container" ref="radarChart"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title">维度得分分布</div>
+            </div>
+            <div class="chart-container" ref="roseChart"></div>
+          </div>
+        </div>
+
+        <!-- Charts Row 2 -->
+        <div class="charts-grid">
+          <div class="chart-card full-width">
+            <div class="chart-header">
+              <div class="chart-title">AUI 得分权重构成</div>
+            </div>
+            <div class="chart-container" ref="stackedBarChart"></div>
+          </div>
+        </div>
+
+        <!-- Paper Lists -->
+        <div class="comparison-section">
+          <div class="paper-list">
+            <div class="chart-header">
+              <div class="chart-title">诺奖论文列表</div>
+            </div>
+            <div class="paper-item" v-for="paper in nobelPapers" :key="paper.id">
+              <div class="paper-icon nobel">🏆</div>
+              <div class="paper-info">
+                <div class="paper-title">{{ paper.title }}</div>
+                <div class="paper-meta">{{ paper.authors }} · {{ paper.year }}</div>
+              </div>
+              <div class="paper-score">{{ paper.score }}</div>
+            </div>
+          </div>
+          <div class="paper-list">
+            <div class="chart-header">
+              <div class="chart-title">对照组论文列表</div>
+            </div>
+            <div class="paper-item" v-for="paper in controlPapers" :key="paper.id">
+              <div class="paper-icon control">📄</div>
+              <div class="paper-info">
+                <div class="paper-title">{{ paper.title }}</div>
+                <div class="paper-meta">{{ paper.authors }} · {{ paper.year }}</div>
+              </div>
+              <div class="paper-score">{{ paper.score }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dimension Breakdown -->
+        <div class="chart-card" style="margin-top: 1.5rem;">
+          <div class="chart-header">
+            <div class="chart-title">维度得分拆解</div>
+          </div>
+          <div class="dimension-grid">
+            <div class="dimension-card">
+              <div class="dimension-icon">📊</div>
+              <div class="dimension-name">形式维度 (Form)</div>
+              <div class="dimension-score form">85.2</div>
+            </div>
+            <div class="dimension-card">
+              <div class="dimension-icon">🔗</div>
+              <div class="dimension-name">结构维度 (Structure)</div>
+              <div class="dimension-score structure">91.3</div>
+            </div>
+            <div class="dimension-card">
+              <div class="dimension-icon">💡</div>
+              <div class="dimension-name">语义维度 (Semantics)</div>
+              <div class="dimension-score semantics">88.7</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Network Tab -->
+      <div class="tab-content" :class="{ active: activeTab === 'network' }">
+        <div class="section-title">知识演化拓扑视图</div>
+        <div class="section-subtitle">基于二阶引用网络的知识传播与影响力分析</div>
+        <div class="network-container" ref="networkChart"></div>
+      </div>
+
+      <!-- Semantic Tab -->
+      <div class="tab-content" :class="{ active: activeTab === 'semantic' }">
+        <div class="section-title">深度语义剖析视图</div>
+        <div class="section-subtitle">知识渗透度分析与实质复用识别</div>
+        
+        <div class="semantic-container">
+          <div class="citation-card">
+            <div class="citation-header">
+              <div class="chart-title">诺奖论文引文示例</div>
+              <span class="citation-type substantive">实质复用</span>
+            </div>
+            <div class="citation-text">
+              <span class="highlight">量子纠缠</span>作为一种神奇的量子现象，首次由Einstein、Podolsky和Rosen在1935年提出<span class="highlight">EPR佯谬</span>。本文<span class="highlight">基于Bell不等式的实验验证</span>，进一步揭示了<span class="highlight">非局域关联</span>的物理本质，为<span class="highlight">量子信息处理</span>奠定了理论基础。
+            </div>
+            <div class="knowledge-score">
+              <span class="score-label">知识渗透度</span>
+              <div class="score-bar-horizontal">
+                <div class="fill high" style="width: 92%"></div>
+              </div>
+              <span class="score-value">0.92</span>
+            </div>
+          </div>
+
+          <div class="citation-card">
+            <div class="citation-header">
+              <div class="chart-title">对照组论文引文示例</div>
+              <span class="citation-type mention">一般提及</span>
+            </div>
+            <div class="citation-text">
+              量子力学是现代物理学的重要支柱。<span class="highlight">Einstein</span>等人在1935年发表了关于量子力学的经典论文。本文<span class="highlight">参考了</span>量子力学的基本理论，<span class="highlight">借鉴了</span>相关研究方法。
+            </div>
+            <div class="knowledge-score">
+              <span class="score-label">知识渗透度</span>
+              <div class="score-bar-horizontal">
+                <div class="fill low" style="width: 28%"></div>
+              </div>
+              <span class="score-value">0.28</span>
+            </div>
+          </div>
+
+          <div class="citation-card">
+            <div class="citation-header">
+              <div class="chart-title">诺奖论文引文示例 2</div>
+              <span class="citation-type substantive">实质复用</span>
+            </div>
+            <div class="citation-text">
+              <span class="highlight">DNA双螺旋结构</span>的发现<span class="highlight">揭示了遗传信息的分子基础</span>。Watson和Crick于1953年提出的<span class="highlight">碱基互补配对原则</span>，为<span class="highlight">DNA复制机制</span>提供了关键理论支撑。本文<span class="highlight">采用X射线晶体学方法</span>进一步验证了<span class="highlight">双螺旋模型</span>的准确性。
+            </div>
+            <div class="knowledge-score">
+              <span class="score-label">知识渗透度</span>
+              <div class="score-bar-horizontal">
+                <div class="fill high" style="width: 88%"></div>
+              </div>
+              <span class="score-value">0.88</span>
+            </div>
+          </div>
+
+          <div class="citation-card">
+            <div class="citation-header">
+              <div class="chart-title">对照组论文引文示例 2</div>
+              <span class="citation-type peripheral">边缘提及</span>
+            </div>
+            <div class="citation-text">
+              生物学研究领域<span class="highlight">涉及</span>众多重要发现。Watson和Crick的工作<span class="highlight">具有</span>里程碑意义。本文<span class="highlight">引用了</span>相关文献，<span class="highlight">参考了</span>前人的研究思路，<span class="highlight">有助于</span>理解生命科学的基本规律。
+            </div>
+            <div class="knowledge-score">
+              <span class="score-label">知识渗透度</span>
+              <div class="score-bar-horizontal">
+                <div class="fill medium" style="width: 45%"></div>
+              </div>
+              <span class="score-value">0.45</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      学术论文有用性多维测度框架 (AUI) · 基于预计算 JSON 数据渲染
+    </footer>
+  </div>
+
+  <script>
+    const { createApp, ref, onMounted, nextTick } = Vue;
+
+    createApp({
+      setup() {
+        const activeTab = ref('dashboard');
+        const tabs = [
+          { id: 'dashboard', name: 'AUI 看板' },
+          { id: 'network', name: '知识网络' },
+          { id: 'semantic', name: '语义分析' }
+        ];
+
+        const radarChart = ref(null);
+        const roseChart = ref(null);
+        const stackedBarChart = ref(null);
+        const networkChart = ref(null);
+
+        const nobelPapers = ref([
+          { id: 1, title: '关于量子力学中的 EPR 佯谬', authors: 'Einstein, Podolsky, Rosen', year: 1935, score: 94.2 },
+          { id: 2, title: 'DNA 结构的双螺旋模型', authors: 'Watson, Crick', year: 1953, score: 92.8 },
+          { id: 3, title: '广义相对论基础', authors: 'Einstein', year: 1915, score: 91.5 }
+        ]);
+
+        const controlPapers = ref([
+          { id: 4, title: '量子力学导论', authors: 'Smith, Johnson', year: 1934, score: 42.3 },
+          { id: 5, title: '生物学基础教程', authors: 'Williams, Brown', year: 1952, score: 38.7 },
+          { id: 6, title: '经典力学综述', authors: 'Davis, Miller', year: 1914, score: 35.2 }
+        ]);
+
+        const initRadarChart = () => {
+          const chart = echarts.init(radarChart.value);
+          const option = {
+            backgroundColor: 'transparent',
+            tooltip: {
+              trigger: 'item',
+              backgroundColor: 'rgba(26, 35, 50, 0.95)',
+              borderColor: 'rgba(212, 168, 83, 0.3)',
+              textStyle: { color: '#f1f5f9' }
+            },
+            legend: {
+              data: ['诺奖论文', '对照组'],
+              bottom: 0,
+              textStyle: { color: '#94a3b8' }
+            },
+            radar: {
+              indicator: [
+                { name: '被引频次', max: 100 },
+                { name: '时序分布', max: 100 },
+                { name: '跨学科性', max: 100 },
+                { name: '网络中心性', max: 100 },
+                { name: '拓扑势能', max: 100 },
+                { name: '语义深度', max: 100 }
+              ],
+              shape: 'polygon',
+              splitNumber: 4,
+              axisName: { color: '#94a3b8', fontSize: 11 },
+              splitLine: { lineStyle: { color: 'rgba(212, 168, 83, 0.15)' } },
+              splitArea: { show: true, areaStyle: { color: ['rgba(10, 15, 26, 0.5)', 'rgba(26, 35, 50, 0.3)'] } }
+            },
+            series: [{
+              type: 'radar',
+              data: [
+                {
+                  value: [92, 78, 86, 94, 88, 90],
+                  name: '诺奖论文',
+                  symbol: 'circle',
+                  symbolSize: 6,
+                  lineStyle: { color: '#d4a853', width: 2 },
+                  areaStyle: { color: 'rgba(212, 168, 83, 0.3)' },
+                  itemStyle: { color: '#d4a853' }
+                },
+                {
+                  value: [48, 52, 37, 35, 42, 25],
+                  name: '对照组',
+                  symbol: 'circle',
+                  symbolSize: 6,
+                  lineStyle: { color: '#4a9eff', width: 2 },
+                  areaStyle: { color: 'rgba(74, 158, 255, 0.2)' },
+                  itemStyle: { color: '#4a9eff' }
+                }
+              ]
+            }]
+          };
+          chart.setOption(option);
+          return chart;
+        };
+
+        const initRoseChart = () => {
+          const chart = echarts.init(roseChart.value);
+          const option = {
+            backgroundColor: 'transparent',
+            tooltip: {
+              trigger: 'item',
+              backgroundColor: 'rgba(26, 35, 50, 0.95)',
+              borderColor: 'rgba(212, 168, 83, 0.3)',
+              textStyle: { color: '#f1f5f9' }
+            },
+            legend: {
+              data: ['形式维度', '结构维度', '语义维度'],
+              bottom: 0,
+              textStyle: { color: '#94a3b8' }
+            },
+            series: [{
+              type: 'pie',
+              radius: ['20%', '70%'],
+              center: ['50%', '45%'],
+              roseType: 'area',
+              itemStyle: {
+                borderRadius: 8,
+                borderColor: '#1a2332',
+                borderWidth: 2
+              },
+              label: {
+                color: '#94a3b8',
+                fontSize: 11
+              },
+              data: [
+                { value: 85.2, name: '形式维度', itemStyle: { color: 'rgba(45, 212, 191, 0.8)' } },
+                { value: 91.3, name: '结构维度', itemStyle: { color: 'rgba(167, 139, 250, 0.8)' } },
+                { value: 88.7, name: '语义维度', itemStyle: { color: 'rgba(244, 114, 182, 0.8)' } }
+              ]
+            }]
+          };
+          chart.setOption(option);
+          return chart;
+        };
+
+        const initStackedBarChart = () => {
+          const chart = echarts.init(stackedBarChart.value);
+          const option = {
+            backgroundColor: 'transparent',
+            tooltip: {
+              trigger: 'axis',
+              axisPointer: { type: 'shadow' },
+              backgroundColor: 'rgba(26, 35, 50, 0.95)',
+              borderColor: 'rgba(212, 168, 83, 0.3)',
+              textStyle: { color: '#f1f5f9' }
+            },
+            legend: {
+              data: ['形式维度得分', '结构维度得分', '语义维度得分'],
+              textStyle: { color: '#94a3b8' },
+              bottom: 0
+            },
+            grid: { left: '3%', right: '4%', bottom: '15%', top: '10%', containLabel: true },
+            xAxis: {
+              type: 'value',
+              max: 100,
+              axisLine: { lineStyle: { color: 'rgba(212, 168, 83, 0.3)' } },
+              axisLabel: { color: '#94a3b8' },
+              splitLine: { lineStyle: { color: 'rgba(212, 168, 83, 0.1)' } }
+            },
+            yAxis: {
+              type: 'category',
+              data: ['对照组', '诺奖论文'],
+              axisLine: { lineStyle: { color: 'rgba(212, 168, 83, 0.3)' } },
+              axisLabel: { color: '#f1f5f9', fontSize: 12 }
+            },
+            series: [
+              {
+                name: '形式维度得分',
+                type: 'bar',
+                stack: 'total',
+                barWidth: '50%',
+                itemStyle: { color: 'rgba(45, 212, 191, 0.8)', borderRadius: [0, 0, 0, 0] },
+                data: [45.6, 85.2]
+              },
+              {
+                name: '结构维度得分',
+                type: 'bar',
+                stack: 'total',
+                barWidth: '50%',
+                itemStyle: { color: 'rgba(167, 139, 250, 0.8)' },
+                data: [38.2, 91.3]
+              },
+              {
+                name: '语义维度得分',
+                type: 'bar',
+                stack: 'total',
+                barWidth: '50%',
+                itemStyle: { color: 'rgba(244, 114, 182, 0.8)', borderRadius: [4, 4, 0, 0] },
+                data: [28.4, 88.7]
+              }
+            ]
+          };
+          chart.setOption(option);
+          return chart;
+        };
+
+        const initNetworkChart = () => {
+          const chart = echarts.init(networkChart.value);
+          
+          const nodes = [
+            { id: '1', name: 'EPR佯谬 (1935)', symbolSize: 60, x: 400, y: 300, itemStyle: { color: '#d4a853' }, category: '核心' },
+            { id: '2', name: 'Bell定理', symbolSize: 45, x: 280, y: 200, itemStyle: { color: '#4a9eff' } },
+            { id: '3', name: '量子纠缠', symbolSize: 40, x: 520, y: 220, itemStyle: { color: '#4a9eff' } },
+            { id: '4', name: 'EPR回应', symbolSize: 35, x: 200, y: 350, itemStyle: { color: '#2dd4bf' } },
+            { id: '5', name: 'Bell实验', symbolSize: 50, x: 350, y: 150, itemStyle: { color: '#a78bfa' } },
+            { id: '6', name: '量子信息', symbolSize: 38, x: 550, y: 320, itemStyle: { color: '#2dd4bf' } },
+            { id: '7', name: '隐变量理论', symbolSize: 30, x: 180, y: 250, itemStyle: { color: '#64748b' } },
+            { id: '8', name: '局域实在论', symbolSize: 28, x: 300, y: 420, itemStyle: { color: '#64748b' } },
+            { id: '9', name: '量子计算', symbolSize: 42, x: 480, y: 120, itemStyle: { color: '#f472b6' } },
+            { id: '10', name: '量子密钥', symbolSize: 32, x: 580, y: 200, itemStyle: { color: '#2dd4bf' } },
+            { id: '11', name: 'CHSH不等式', symbolSize: 25, x: 250, y: 120, itemStyle: { color: '#64748b' } },
+            { id: '12', name: '量子隐形传态', symbolSize: 36, x: 420, y: 80, itemStyle: { color: '#a78bfa' } }
+          ];
+
+          const links = [
+            { source: '1', target: '2', lineStyle: { width: 3, color: '#d4a853' } },
+            { source: '1', target: '3', lineStyle: { width: 3, color: '#d4a853' } },
+            { source: '1', target: '4', lineStyle: { width: 2, color: '#4a9eff' } },
+            { source: '2', target: '5', lineStyle: { width: 3, color: '#a78bfa' } },
+            { source: '2', target: '7', lineStyle: { width: 1, color: '#64748b' } },
+            { source: '2', target: '11', lineStyle: { width: 2, color: '#64748b' } },
+            { source: '3', target: '6', lineStyle: { width: 2, color: '#2dd4bf' } },
+            { source: '5', target: '9', lineStyle: { width: 2, color: '#f472b6' } },
+            { source: '5', target: '12', lineStyle: { width: 2, color: '#a78bfa' } },
+            { source: '6', target: '10', lineStyle: { width: 1, color: '#2dd4bf' } },
+            { source: '9', target: '12', lineStyle: { width: 1, color: '#f472b6' } }
+          ];
+
+          const option = {
+            backgroundColor: '#1a2332',
+            tooltip: {
+              trigger: 'item',
+              backgroundColor: 'rgba(26, 35, 50, 0.95)',
+              borderColor: 'rgba(212, 168, 83, 0.3)',
+              textStyle: { color: '#f1f5f9' },
+              formatter: (params) => {
+                if (params.dataType === 'node') {
+                  return `<strong>${params.name}</strong><br/>度中心性: ${params.data.symbolSize}`;
+                }
+                return '';
+              }
+            },
+            series: [{
+              type: 'graph',
+              layout: 'force',
+              force: {
+                repulsion: 300,
+                edgeLength: 120,
+                gravity: 0.1,
+                friction: 0.6
+              },
+              roam: true,
+              label: {
+                show: true,
+                position: 'right',
+                color: '#f1f5f9',
+                fontSize: 11,
+                formatter: '{b}'
+              },
+              lineStyle: {
+                curveness: 0.1,
+                opacity: 0.6
+              },
+              emphasis: {
+                focus: 'adjacency',
+                lineStyle: { width: 5 }
+              },
+              data: nodes,
+              links: links
+            }]
+          };
+          chart.setOption(option);
+          return chart;
+        };
+
+        onMounted(() => {
+          nextTick(() => {
+            const radar = initRadarChart();
+            const rose = initRoseChart();
+            const stackedBar = initStackedBarChart();
+            const network = initNetworkChart();
+
+            window.addEventListener('resize', () => {
+              radar.resize();
+              rose.resize();
+              stackedBar.resize();
+              network.resize();
+            });
+          });
+        });
+
+        return {
+          activeTab,
+          tabs,
+          nobelPapers,
+          controlPapers,
+          radarChart,
+          roseChart,
+          stackedBarChart,
+          networkChart
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
